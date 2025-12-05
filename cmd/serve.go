@@ -3,17 +3,18 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"test/handlers"
 	"test/middleware"
 )
 
 func Serve() {
+	manager := middleware.NewManger()
+
+	// GLOBAL Middlewares
+	manager.Use(middleware.Logger, middleware.NothingGlobal)
+
 	mux := http.NewServeMux()
-	mux.Handle("GET /products", middleware.Logger(http.HandlerFunc(handlers.GetProducts)))
-	mux.Handle("POST /products", middleware.Logger(http.HandlerFunc(handlers.CreateProduct)))
-	mux.Handle("GET /products/{productId}", middleware.Logger(http.HandlerFunc(handlers.GetProductById)))
-	mux.Handle("PUT /products/{productId}", middleware.Logger(http.HandlerFunc(handlers.EditProduct)))
-	mux.Handle("DELETE /products/{productId}", middleware.Logger(http.HandlerFunc(handlers.DeleteProducts)))
+
+	InitRoutes(mux, manager)
 
 	fmt.Println("Server running at port: 3000")
 
