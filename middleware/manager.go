@@ -25,12 +25,19 @@ func (manager *Manager) Use(middlewares ...Middleware) {
 func (manager *Manager) With(handler http.Handler, middlewares ...Middleware) http.Handler {
 	h := handler
 
-	// 1️⃣ Apply route-specific middleware (in reverse)
+	// Apply route-specific middleware (in reverse)
 	for i := len(middlewares) - 1; i >= 0; i-- {
 		h = middlewares[i](h)
 	}
 
-	// 2️⃣ Apply global middleware (in reverse)
+	return h
+}
+
+func (manager *Manager) WrapMux(handler http.Handler) http.Handler {
+	h := handler
+
+	// h = CorsWithPreflight(Logger(NothingGlobal(mux)))
+
 	for i := len(manager.globalMiddlewares) - 1; i >= 0; i-- {
 		h = manager.globalMiddlewares[i](h)
 	}
