@@ -24,7 +24,7 @@ func EditProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body.ID = id
-	database.UpdateProduct(id, body)
+	database.UpdateProduct(body)
 	
 	// Verify the update was successful
 	if updatedProduct := database.GetProduct(id); updatedProduct != nil {

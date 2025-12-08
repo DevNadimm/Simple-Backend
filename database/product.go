@@ -24,9 +24,9 @@ func GetProduct(productId int) *models.Product {
 	return nil
 }
 
-func UpdateProduct(productId int, product models.Product) {
+func UpdateProduct(product models.Product) {
 	for idx, p := range productList {
-		if p.ID == productId {
+		if p.ID == product.ID {
 			productList[idx] = product
 			return
 		}
