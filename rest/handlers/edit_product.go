@@ -23,14 +23,13 @@ func EditProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, p := range database.ProductList {
-		if p.ID == id {
-			body.ID = id
-			database.ProductList[i] = body
-			utils.SendData(w, http.StatusOK, true, "Product edited successfully", body)
-			return
-		}
+	body.ID = id
+	database.UpdateProduct(id, body)
+	
+	// Verify the update was successful
+	if updatedProduct := database.GetProduct(id); updatedProduct != nil {
+		utils.SendData(w, http.StatusOK, true, "Product edited successfully", *updatedProduct)
+	} else {
+		utils.SendData(w, http.StatusNotFound, false, "Product not found", nil)
 	}
-
-	utils.SendData(w, http.StatusNotFound, false, "Product not found", nil)
 }

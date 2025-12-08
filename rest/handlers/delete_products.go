@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 	"test/database"
-	"test/models"
 	"test/utils"
 )
 
@@ -17,18 +16,7 @@ func DeleteProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var newList []models.Product
-	found := false
-
-	for _, product := range database.ProductList {
-		if product.ID == id {
-			found = true
-			continue
-		}
-		newList = append(newList, product)
-	}
-
-	database.ProductList = newList
+	found := database.DeleteProduct(id)
 
 	if found {
 		utils.SendData(w, http.StatusOK, true, "Product deleted successfully", nil)

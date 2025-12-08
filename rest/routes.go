@@ -1,12 +1,12 @@
-package cmd
+package rest
 
 import (
 	"net/http"
-	"test/handlers"
-	"test/middleware"
+	"test/rest/handlers"
+	"test/rest/middleware"
 )
 
-func InitRoutes(mux *http.ServeMux, manager *middleware.Manager) {
+func initRoutes(mux *http.ServeMux, manager *middleware.Manager) {
 
 	// ROUTES (no local middleware)
 	mux.Handle("GET /products",
