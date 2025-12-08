@@ -11,8 +11,6 @@ import (
 
 func Start(config config.Config) {
 	manager := middleware.NewManger()
-
-	// GLOBAL Middlewares
 	manager.Use(middleware.Cors, middleware.Preflight, middleware.Logger, middleware.NothingGlobal)
 
 	mux := http.NewServeMux()
@@ -20,8 +18,8 @@ func Start(config config.Config) {
 	initRoutes(mux, manager)
 
 	adress := ":" + strconv.Itoa(config.HttpPort)
-
 	fmt.Println("Server running at port", adress)
+	
 	err := http.ListenAndServe(adress, wrappedMux)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
