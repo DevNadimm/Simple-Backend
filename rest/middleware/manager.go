@@ -4,25 +4,25 @@ import (
 	"net/http"
 )
 
-type Middleware func(next http.Handler) http.Handler
+type MiddlewareFunc func(next http.Handler) http.Handler
 
 type Manager struct {
-	globalMiddlewares []Middleware
+	globalMiddlewares []MiddlewareFunc
 }
 
 func NewManger() *Manager {
 	manager := Manager{
-		globalMiddlewares: make([]Middleware, 0),
+		globalMiddlewares: make([]MiddlewareFunc, 0),
 	}
 
 	return &manager
 }
 
-func (manager *Manager) Use(middlewares ...Middleware) {
+func (manager *Manager) Use(middlewares ...MiddlewareFunc) {
 	manager.globalMiddlewares = append(manager.globalMiddlewares, middlewares...)
 }
 
-func (manager *Manager) With(handler http.Handler, middlewares ...Middleware) http.Handler {
+func (manager *Manager) With(handler http.Handler, middlewares ...MiddlewareFunc) http.Handler {
 	h := handler
 
 	// Apply route-specific middleware (in reverse)

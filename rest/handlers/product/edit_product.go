@@ -1,4 +1,4 @@
-package handlers
+package product
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"test/utils"
 )
 
-func EditProduct(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) EditProduct(w http.ResponseWriter, r *http.Request) {
 	productId := r.PathValue("productId")
 	id, err := strconv.Atoi(productId)
 	if err != nil {
@@ -25,7 +25,7 @@ func EditProduct(w http.ResponseWriter, r *http.Request) {
 
 	body.ID = id
 	database.UpdateProduct(body)
-	
+
 	// Verify the update was successful
 	if updatedProduct := database.GetProduct(id); updatedProduct != nil {
 		utils.SendData(w, http.StatusOK, true, "Product edited successfully", *updatedProduct)

@@ -1,4 +1,4 @@
-package handlers
+package product
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"test/utils"
 )
 
-func CreateProduct(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var newProduct models.Product
 	err := json.NewDecoder(r.Body).Decode(&newProduct)
 

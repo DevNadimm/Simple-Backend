@@ -1,4 +1,4 @@
-package handlers
+package product
 
 import (
 	"net/http"
@@ -6,6 +6,6 @@ import (
 	"test/utils"
 )
 
-func GetProducts(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	utils.SendData(w, http.StatusOK, true, "Products fetched successfully", database.GetProducts())
 }

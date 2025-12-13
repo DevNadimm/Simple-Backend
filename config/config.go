@@ -9,12 +9,13 @@ import (
 )
 
 type Config struct {
-	Version     string
-	ServiceName string
-	HttpPort    int
+	Version      string
+	ServiceName  string
+	HttpPort     int
+	JwtSecretKey string
 }
 
-var config Config
+var config *Config
 
 func loadConfig() {
 	err := godotenv.Load()
@@ -46,14 +47,23 @@ func loadConfig() {
 		os.Exit(1)
 	}
 
-	config = Config{
-		Version:     version,
-		ServiceName: serviceName,
-		HttpPort:    port,
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	if jwtSecretKey == "" {
+		fmt.Println("JWT_SECRET_KEY is required")
+		os.Exit(1)
+	}
+
+	config = &Config{
+		Version:      version,
+		ServiceName:  serviceName,
+		HttpPort:     port,
+		JwtSecretKey: jwtSecretKey,
 	}
 }
 
-func GetConfig() Config {
-	loadConfig()
+func GetConfig() *Config {
+	if config == nil {
+		loadConfig()
+	}
 	return config
 }
