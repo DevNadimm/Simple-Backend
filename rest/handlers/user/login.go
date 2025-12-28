@@ -2,14 +2,14 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"test/config"
-	"test/database"
 	"test/models"
+	"test/repo"
 	"test/utils"
 )
 
-type ReqData struct {
+type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -20,33 +20,39 @@ type LoginResponse struct {
 }
 
 func (handler *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	var reqData ReqData
-	err := json.NewDecoder(r.Body).Decode(&reqData)
-	if err != nil {
+	var loginReq LoginRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
 		utils.SendData(w, http.StatusBadRequest, false, "Invalid JSON body", nil)
 		return
 	}
 
-	user := database.GetUserByEmail(reqData.Email)
-	if user == nil {
-		utils.SendData(w, http.StatusNotFound, false, "User not found", nil)
+	user, err := handler.userRepo.GetByEmail(loginReq.Email)
+	if err != nil {
+		if errors.Is(err, repo.ErrUserNotFound) {
+			utils.SendData(w, http.StatusNotFound, false, "User not registered", nil)
+			return
+		}
+		utils.SendData(w, http.StatusInternalServerError, false, "Internal server error", nil)
 		return
 	}
 
-	if !database.CheckPasswordCorrect(*user, reqData.Password) {
+	// Plain-text password check
+	if user.Password != loginReq.Password {
 		utils.SendData(w, http.StatusUnauthorized, false, "Invalid password", nil)
 		return
 	}
 
-	jwtSecretKey := config.GetConfig().JwtSecretKey
-
-	accessToken, err := utils.CreateJwt(jwtSecretKey, utils.Payload{
-		ID:          user.ID,
-		FirstName:   user.FirstName,
-		LastName:    user.LastName,
-		Email:       user.Email,
-		IsShopOwner: user.IsShopOwner,
-	})
+	accessToken, err := utils.CreateJwt(
+		handler.config.JwtSecretKey,
+		utils.Payload{
+			ID:          user.ID,
+			FirstName:   user.FirstName,
+			LastName:    user.LastName,
+			Email:       user.Email,
+			IsShopOwner: user.IsShopOwner,
+		},
+	)
 
 	if err != nil {
 		utils.SendData(w, http.StatusInternalServerError, false, "Failed to create access token", nil)

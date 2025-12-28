@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"os"
 	"test/config"
+	"test/infra/db"
 	"test/rest"
 	"test/rest/handlers/product"
 	"test/rest/handlers/user"
@@ -11,8 +13,13 @@ import (
 func Serve() {
 	config := config.GetConfig()
 	middleware := middleware.NewMiddleware(config)
+	db, err := db.NewConnection()
 
-	server := rest.NewServer(config, user.NewHandler(), product.NewHandler(middleware))
-	
+	if err != nil {
+		os.Exit(1)
+	}
+
+	server := rest.NewServer(config, user.NewHandler(config, db), product.NewHandler(middleware, db))
+
 	server.Start()
 }

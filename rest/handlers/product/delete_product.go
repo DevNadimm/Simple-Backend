@@ -1,26 +1,32 @@
 package product
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
-	"test/database"
+	"test/repo"
 	"test/utils"
 )
 
 func (handler *Handler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
-	productId := r.PathValue("productId")
-	id, err := strconv.Atoi(productId)
+	idStr := r.PathValue("productId")
 
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		utils.SendData(w, http.StatusBadRequest, false, "Invalid product ID", nil)
 		return
 	}
 
-	found := database.DeleteProduct(id)
-
-	if found {
-		utils.SendData(w, http.StatusOK, true, "Product deleted successfully", nil)
-	} else {
-		utils.SendData(w, http.StatusNotFound, false, "Product not found", nil)
+	err = handler.productRepo.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, repo.ErrProductNotFound):
+			utils.SendData(w, http.StatusNotFound, false, "Product not found", nil)
+		default:
+			utils.SendData(w, http.StatusInternalServerError, false, "Internal server error", nil)
+		}
+		return
 	}
+
+	utils.SendData(w, http.StatusOK, true, "Product deleted successfully", nil)
 }

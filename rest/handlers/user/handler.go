@@ -1,7 +1,20 @@
 package user
 
-type Handler struct{}
+import (
+	"test/config"
+	"test/repo"
 
-func NewHandler() *Handler {
-	return &Handler{}
+	"github.com/jmoiron/sqlx"
+)
+
+type Handler struct {
+	config   *config.Config
+	userRepo repo.UserRepo
+}
+
+func NewHandler(config *config.Config, db *sqlx.DB) *Handler {
+	return &Handler{
+		config:   config,
+		userRepo: repo.NewUserRepo(db),
+	}
 }
