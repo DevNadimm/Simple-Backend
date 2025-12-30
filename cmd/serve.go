@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"test/config"
 	"test/infra/db"
@@ -12,14 +13,22 @@ import (
 
 func Serve() {
 	config := config.GetConfig()
-	middleware := middleware.NewMiddleware(config)
-	db, err := db.NewConnection()
 
+	dbCon, err := db.NewConnection(config.DB)
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	server := rest.NewServer(config, user.NewHandler(config, db), product.NewHandler(middleware, db))
+	err = db.MigrateDB(dbCon, "./migrations")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	middleware := middleware.NewMiddleware(config)
+
+	server := rest.NewServer(config, user.NewHandler(config, dbCon), product.NewHandler(middleware, dbCon))
 
 	server.Start()
 }

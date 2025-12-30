@@ -2,23 +2,33 @@ package db
 
 import (
 	"fmt"
+	"test/config"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
-func GetConnectionString() string {
-	// user -> postgres
-	// pass -> 12345678
-	// host -> localhost
-	// port -> 5432
-	// db name -> ecommerce
+func GetConnectionString(cfg *config.DBConfig) string {
+	sslMode := "disable"
+	if cfg.EnableSSLMode {
+		sslMode = "enable"
+	}
 
-	return "user=postgres password=12345678 host=localhost port=5432 dbname=ecommerce sslmode=disable"
+	connStr := fmt.Sprintf(
+		"user=%s password=%s host=%s port=%d dbname=%s sslmode=%s",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.Name,
+		sslMode,
+	)
+
+	return connStr
 }
 
-func NewConnection() (*sqlx.DB, error) {
-	dbSource := GetConnectionString()
+func NewConnection(cfg *config.DBConfig) (*sqlx.DB, error) {
+	dbSource := GetConnectionString(cfg)
 	dbCon, err := sqlx.Connect("postgres", dbSource)
 
 	if err != nil {

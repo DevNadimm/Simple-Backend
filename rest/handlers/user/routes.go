@@ -13,4 +13,8 @@ func (handler *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.M
 	mux.Handle("POST /users/login",
 		manager.With(http.HandlerFunc(handler.Login)),
 	)
+
+	mux.Handle("PUT /users/{userId}",
+		manager.With(http.HandlerFunc(handler.EditUser)),
+	)
 }
