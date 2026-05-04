@@ -9,9 +9,13 @@ import (
 )
 
 func GetConnectionString(cfg *config.DBConfig) string {
+	if cfg.ConnectionURL != "" {
+		return cfg.ConnectionURL
+	}
+
 	sslMode := "disable"
 	if cfg.EnableSSLMode {
-		sslMode = "enable"
+		sslMode = "require" // "require" is better for most cloud providers than "enable"
 	}
 
 	connStr := fmt.Sprintf(
