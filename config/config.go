@@ -30,25 +30,28 @@ type Config struct {
 var config *Config
 
 func loadConfig() {
-	_ = godotenv.Load() // Ignore error if .env is missing
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Failed to load the env variables:", err)
+	}
 
 	version := os.Getenv("VERSION")
 	if version == "" {
-		version = "1.0.0" // Default version
+		fmt.Println("VERSION is required")
+		os.Exit(1)
 	}
 
 	serviceName := os.Getenv("SERVICE_NAME")
 	if serviceName == "" {
-		serviceName = "ECOMMERCE" // Default name
+		fmt.Println("SERVICE_NAME is required")
+		os.Exit(1)
 	}
 
 	// Support both HTTP_PORT and PORT (used by Render)
 	httpPortStr := os.Getenv("HTTP_PORT")
 	if httpPortStr == "" {
-		httpPortStr = os.Getenv("PORT")
-	}
-	if httpPortStr == "" {
-		httpPortStr = "3000" // Default port
+		fmt.Println("HTTP_PORT is required")
+		os.Exit(1)
 	}
 
 	httpPort, err := strconv.Atoi(httpPortStr)
@@ -59,7 +62,8 @@ func loadConfig() {
 
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 	if jwtSecretKey == "" {
-		jwtSecretKey = "default_secret_key" // Should be changed in production
+		fmt.Println("JWT_SECRET_KEY is required")
+		os.Exit(1)
 	}
 
 	// --- Database config ---
@@ -75,19 +79,39 @@ func loadConfig() {
 		}
 	} else {
 		dbUser := os.Getenv("DB_USER")
-		dbPassword := os.Getenv("DB_PASSWORD")
-		dbHost := os.Getenv("DB_HOST")
-		dbPortStr := os.Getenv("DB_PORT")
-		dbName := os.Getenv("DB_NAME")
-
-		if dbUser == "" || dbHost == "" || dbName == "" {
-			fmt.Println("Database configuration (DB_USER, DB_HOST, DB_NAME) or DATABASE_URL is required")
-			// We don't exit here to allow the app to start, but DB calls will fail
+		if dbUser == "" {
+			fmt.Println("DB_USER is required")
+			os.Exit(1)
 		}
 
-		dbPort := 5432
-		if dbPortStr != "" {
-			dbPort, _ = strconv.Atoi(dbPortStr)
+		dbPassword := os.Getenv("DB_PASSWORD")
+		if dbPassword == "" {
+			fmt.Println("DB_PASSWORD is required")
+			os.Exit(1)
+		}
+
+		dbHost := os.Getenv("DB_HOST")
+		if dbHost == "" {
+			fmt.Println("DB_HOST is required")
+			os.Exit(1)
+		}
+
+		dbPortStr := os.Getenv("DB_PORT")
+		if dbPortStr == "" {
+			fmt.Println("DB_PORT is required")
+			os.Exit(1)
+		}
+
+		dbPort, err := strconv.Atoi(dbPortStr)
+		if err != nil {
+			fmt.Println("DB_PORT must be a number")
+			os.Exit(1)
+		}
+
+		dbName := os.Getenv("DB_NAME")
+		if dbName == "" {
+			fmt.Println("DB_NAME is required")
+			os.Exit(1)
 		}
 
 		dbSSLStr := os.Getenv("DB_ENABLE_SSL_MODE")
