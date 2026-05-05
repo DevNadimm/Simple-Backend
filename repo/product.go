@@ -39,15 +39,33 @@ func (repo *productRepo) Create(product models.Product) (*models.Product, error)
 		return nil, err
 	}
 
-	return &product, nil
+	return repo.Get(product.ID)
 }
 
 // -------------------- GET --------------------
 func (repo *productRepo) Get(productId int) (*models.Product, error) {
 	var product models.Product
-	query := `SELECT id, title, description, price, currency, stock, category_id, image_url FROM products WHERE id=$1 LIMIT 1;`
+	var category models.Category
+	var categoryID sql.NullInt64
+	var categoryName sql.NullString
+	var categoryParentID sql.NullInt64
 
-	err := repo.db.Get(&product, query, productId)
+	query := `
+		SELECT 
+			p.id, p.title, p.description, p.price, p.currency, p.stock, p.category_id, p.image_url,
+			c.id as c_id, c.name as c_name, c.parent_id as c_parent_id
+		FROM products p
+		LEFT JOIN categories c ON p.category_id = c.id
+		WHERE p.id = $1
+		LIMIT 1;
+	`
+
+	row := repo.db.QueryRow(query, productId)
+	err := row.Scan(
+		&product.ID, &product.Title, &product.Description, &product.Price, &product.Currency, &product.Stock, &product.CategoryID, &product.ImageURL,
+		&categoryID, &categoryName, &categoryParentID,
+	)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrProductNotFound
@@ -55,17 +73,62 @@ func (repo *productRepo) Get(productId int) (*models.Product, error) {
 		return nil, err
 	}
 
+	if categoryID.Valid {
+		category.ID = categoryID.Int64
+		category.Name = categoryName.String
+		if categoryParentID.Valid {
+			pid := categoryParentID.Int64
+			category.ParentID = &pid
+		}
+		product.Category = &category
+	}
+
 	return &product, nil
 }
 
 // -------------------- LIST --------------------
 func (repo *productRepo) List() ([]*models.Product, error) {
-	var products []*models.Product
-	query := `SELECT id, title, description, price, currency, stock, category_id, image_url FROM products ORDER BY id ASC;`
+	query := `
+		SELECT 
+			p.id, p.title, p.description, p.price, p.currency, p.stock, p.category_id, p.image_url,
+			c.id as c_id, c.name as c_name, c.parent_id as c_parent_id
+		FROM products p
+		LEFT JOIN categories c ON p.category_id = c.id
+		ORDER BY p.id ASC;
+	`
 
-	err := repo.db.Select(&products, query)
+	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
+	}
+	defer rows.Close()
+
+	var products []*models.Product
+	for rows.Next() {
+		var product models.Product
+		var category models.Category
+		var categoryID sql.NullInt64
+		var categoryName sql.NullString
+		var categoryParentID sql.NullInt64
+
+		err := rows.Scan(
+			&product.ID, &product.Title, &product.Description, &product.Price, &product.Currency, &product.Stock, &product.CategoryID, &product.ImageURL,
+			&categoryID, &categoryName, &categoryParentID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if categoryID.Valid {
+			category.ID = categoryID.Int64
+			category.Name = categoryName.String
+			if categoryParentID.Valid {
+				pid := categoryParentID.Int64
+				category.ParentID = &pid
+			}
+			product.Category = &category
+		}
+		products = append(products, &product)
 	}
 
 	return products, nil
@@ -77,11 +140,11 @@ func (repo *productRepo) Update(product models.Product) (*models.Product, error)
 		UPDATE products
 		SET title=$1, description=$2, price=$3, currency=$4, stock=$5, category_id=$6, image_url=$7, updated_at=CURRENT_TIMESTAMP
 		WHERE id=$8
-		RETURNING id, title, description, price, currency, stock, category_id, image_url;
+		RETURNING id;
 	`
 
-	row := repo.db.QueryRow(query, product.Title, product.Description, product.Price, product.Currency, product.Stock, product.CategoryID, product.ImageURL, product.ID)
-	err := row.Scan(&product.ID, &product.Title, &product.Description, &product.Price, &product.Currency, &product.Stock, &product.CategoryID, &product.ImageURL)
+	var id int
+	err := repo.db.QueryRow(query, product.Title, product.Description, product.Price, product.Currency, product.Stock, product.CategoryID, product.ImageURL, product.ID).Scan(&id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrProductNotFound
@@ -89,7 +152,7 @@ func (repo *productRepo) Update(product models.Product) (*models.Product, error)
 		return nil, err
 	}
 
-	return &product, nil
+	return repo.Get(id)
 }
 
 // -------------------- DELETE --------------------
