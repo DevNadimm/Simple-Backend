@@ -47,7 +47,6 @@ func loadConfig() {
 		os.Exit(1)
 	}
 
-	// Support both HTTP_PORT and PORT (used by Render)
 	httpPortStr := os.Getenv("HTTP_PORT")
 	if httpPortStr == "" {
 		fmt.Println("HTTP_PORT is required")

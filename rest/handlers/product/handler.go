@@ -10,11 +10,13 @@ import (
 type Handler struct {
 	middleware  *middleware.Middleware
 	productRepo repo.ProductRepo
+	categoryRepo repo.CategoryRepo
 }
 
 func NewHandler(middleware *middleware.Middleware, db *sqlx.DB) *Handler {
 	return &Handler{
 		middleware:  middleware,
 		productRepo: repo.NewProductRepo(db),
+		categoryRepo: repo.NewCategoryRepo(db),
 	}
 }

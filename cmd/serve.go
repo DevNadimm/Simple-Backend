@@ -6,6 +6,7 @@ import (
 	"test/config"
 	"test/infra/db"
 	"test/rest"
+	"test/rest/handlers/category"
 	"test/rest/handlers/product"
 	"test/rest/handlers/user"
 	"test/rest/middleware"
@@ -28,7 +29,12 @@ func Serve() {
 
 	middleware := middleware.NewMiddleware(config)
 
-	server := rest.NewServer(config, user.NewHandler(config, dbCon), product.NewHandler(middleware, dbCon))
+	server := rest.NewServer(
+		config, 
+		user.NewHandler(config, dbCon), 
+		product.NewHandler(middleware, dbCon),
+		category.NewHandler(middleware, dbCon),
+	)
 
 	server.Start()
 }

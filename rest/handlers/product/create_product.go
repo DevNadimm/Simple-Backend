@@ -10,6 +10,8 @@ import (
 
 func (handler *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	productRepo := handler.productRepo
+	categoryRepo := handler.categoryRepo
+
 	var newProduct models.Product
 
 	err := json.NewDecoder(r.Body).Decode(&newProduct)
@@ -29,6 +31,21 @@ func (handler *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	if newProduct.Price <= 0 {
 		utils.SendData(w, http.StatusBadRequest, false, "Price must be greater than 0", nil)
 		return
+	}
+
+	if newProduct.CategoryID <= 0 {
+		utils.SendData(w, http.StatusBadRequest, false, "Category ID is required", nil)
+		return
+	} else {
+		_, err := categoryRepo.GetByID(int(newProduct.CategoryID))
+		if err != nil {
+			utils.SendData(w, http.StatusNotFound, false, "Category not found", nil)
+			return
+		}
+	}
+
+	if newProduct.Currency == "" {
+		newProduct.Currency = "BDT"
 	}
 
 	product, err := productRepo.Create(newProduct)
