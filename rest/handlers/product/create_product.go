@@ -33,11 +33,11 @@ func (handler *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if newProduct.CategoryID <= 0 {
+	if newProduct.CategoryID == nil || *newProduct.CategoryID <= 0 {
 		utils.SendData(w, http.StatusBadRequest, false, "Category ID is required", nil)
 		return
 	} else {
-		_, err := categoryRepo.GetByID(int(newProduct.CategoryID))
+		_, err := categoryRepo.GetByID(int(*newProduct.CategoryID))
 		if err != nil {
 			utils.SendData(w, http.StatusNotFound, false, "Category not found", nil)
 			return

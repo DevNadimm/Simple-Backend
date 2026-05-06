@@ -7,7 +7,7 @@ type Product struct {
 	Price       float64  `db:"price" json:"price"`
 	Currency    string   `db:"currency" json:"currency"`
 	Stock       int      `db:"stock" json:"stock"`
-	CategoryID  int64    `db:"category_id" json:"category_id"`
+	CategoryID  *int64   `db:"category_id" json:"category_id"`
 	ImageURL    string   `db:"image_url" json:"image_url"`
 	Category    *Category `db:"-" json:"category,omitempty"`
 }

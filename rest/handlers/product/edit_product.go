@@ -40,11 +40,11 @@ func (handler *Handler) EditProduct(w http.ResponseWriter, r *http.Request) {
 		utils.SendData(w, http.StatusBadRequest, false, "Price must be greater than 0", nil)
 		return
 	}
-	if body.CategoryID <= 0 {
+	if body.CategoryID == nil || *body.CategoryID <= 0 {
 		utils.SendData(w, http.StatusBadRequest, false, "Category ID is required", nil)
 		return
 	} else {
-		_, err := categoryRepo.GetByID(int(body.CategoryID))
+		_, err := categoryRepo.GetByID(int(*body.CategoryID))
 		if err != nil {
 			utils.SendData(w, http.StatusNotFound, false, "Category not found", nil)
 			return
