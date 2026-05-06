@@ -1,13 +1,18 @@
 package middleware
 
-import "test/config"
+import (
+	"test/config"
+	"test/repo"
+)
 
 type Middleware struct {
-	config *config.Config
+	config   *config.Config
+	userRepo repo.UserRepo
 }
 
-func NewMiddleware(config *config.Config) *Middleware {
+func NewMiddleware(config *config.Config, userRepo repo.UserRepo) *Middleware {
 	return &Middleware{
-		config: config,
+		config:   config,
+		userRepo: userRepo,
 	}
 }

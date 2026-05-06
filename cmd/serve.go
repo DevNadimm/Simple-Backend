@@ -5,6 +5,7 @@ import (
 	"os"
 	"test/config"
 	"test/infra/db"
+	"test/repo"
 	"test/rest"
 	"test/rest/handlers/category"
 	"test/rest/handlers/product"
@@ -27,7 +28,8 @@ func Serve() {
 		os.Exit(1)
 	}
 
-	middleware := middleware.NewMiddleware(config)
+	userRepo := repo.NewUserRepo(dbCon)
+	middleware := middleware.NewMiddleware(config, userRepo)
 
 	server := rest.NewServer(
 		config, 

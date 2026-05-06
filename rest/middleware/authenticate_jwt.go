@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"net/http"
 	"strings"
 	"test/utils"
@@ -51,7 +52,28 @@ func (middleware Middleware) AuthenticateJwt(next http.Handler) http.Handler {
 
 		expectedSignature := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hash)
 		if signature != expectedSignature {
-			utils.SendData(w, http.StatusUnauthorized, false, "Invalid access token", nil)
+			utils.SendData(w, http.StatusUnauthorized, false, "Invalid access token signature", nil)
+			return
+		}
+
+		// --- New: Verify User from Database ---
+		// 1. Decode Payload
+		payloadBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(jwtPayload)
+		if err != nil {
+			utils.SendData(w, http.StatusUnauthorized, false, "Invalid token payload", nil)
+			return
+		}
+
+		var payload utils.Payload
+		if err := json.Unmarshal(payloadBytes, &payload); err != nil {
+			utils.SendData(w, http.StatusUnauthorized, false, "Invalid token payload format", nil)
+			return
+		}
+
+		// 2. Check Database
+		_, err = middleware.userRepo.GetByID(payload.ID)
+		if err != nil {
+			utils.SendData(w, http.StatusUnauthorized, false, "User not found or account disabled", nil)
 			return
 		}
 
