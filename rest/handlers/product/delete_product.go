@@ -17,6 +17,8 @@ func (handler *Handler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = nil
+
 	err = handler.productRepo.Delete(id)
 	if err != nil {
 		switch {
