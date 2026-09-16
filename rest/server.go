@@ -7,16 +7,18 @@ import (
 	"strconv"
 	"test/config"
 	"test/rest/handlers/category"
+	"test/rest/handlers/hospital"
 	"test/rest/handlers/product"
 	"test/rest/handlers/user"
 	"test/rest/middleware"
 )
 
 type Server struct {
-	config         *config.Config
-	userHandler    *user.Handler
-	productHandler *product.Handler
+	config          *config.Config
+	userHandler     *user.Handler
+	productHandler  *product.Handler
 	categoryHandler *category.Handler
+	hospitalHandler *hospital.Handler
 }
 
 func NewServer(
@@ -24,12 +26,14 @@ func NewServer(
 	userHandler *user.Handler,
 	productHandler *product.Handler,
 	categoryHandler *category.Handler,
+	hospitalHandler *hospital.Handler,
 ) *Server {
 	return &Server{
 		config:          config,
 		userHandler:     userHandler,
 		productHandler:  productHandler,
 		categoryHandler: categoryHandler,
+		hospitalHandler: hospitalHandler,
 	}
 }
 
@@ -43,6 +47,7 @@ func (server *Server) Start() {
 	server.userHandler.RegisterRoutes(mux, manager)
 	server.productHandler.RegisterRoutes(mux, manager)
 	server.categoryHandler.RegisterRoutes(mux, manager)
+	server.hospitalHandler.RegisterRoutes(mux, manager)
 
 	adress := ":" + strconv.Itoa(server.config.HttpPort)
 	fmt.Println("Server running at port", adress)

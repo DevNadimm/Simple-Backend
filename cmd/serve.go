@@ -8,6 +8,7 @@ import (
 	"test/repo"
 	"test/rest"
 	"test/rest/handlers/category"
+	"test/rest/handlers/hospital"
 	"test/rest/handlers/product"
 	"test/rest/handlers/user"
 	"test/rest/middleware"
@@ -36,6 +37,7 @@ func Serve() {
 		user.NewHandler(config, dbCon), 
 		product.NewHandler(middleware, dbCon),
 		category.NewHandler(middleware, dbCon),
+		hospital.NewHandler(config),
 	)
 
 	server.Start()
