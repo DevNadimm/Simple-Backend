@@ -49,7 +49,10 @@ func loadConfig() {
 
 	httpPortStr := os.Getenv("HTTP_PORT")
 	if httpPortStr == "" {
-		fmt.Println("HTTP_PORT is required")
+		httpPortStr = os.Getenv("PORT") // Fallback for Render/Heroku
+	}
+	if httpPortStr == "" {
+		fmt.Println("HTTP_PORT or PORT is required")
 		os.Exit(1)
 	}
 
